@@ -6,6 +6,7 @@ import { useAuth } from "../hooks/AuthContext";
 
 const Shorter = () => {
   const [url, setUrl] = useState("");
+  const [user, setUser] = useState("");
   const [shortenedUrl, setShortenedUrl] = useState("");
   const [urls, setUrls] = useState([]); // State to store fetched URLs
   const [loading, setLoading] = useState(true); // Loading for fetching
@@ -13,7 +14,30 @@ const Shorter = () => {
   const { currentUser } = useAuth(); // Access currentUser from AuthContext
 
   // Set the default domain
-  const defaultDomain = import.meta.env.VITE_BACKEND_URL; // Replace with your actual default domain
+  const defaultDomain = import.meta.env.VITE_BACKEND_URL; 
+  const fetchUser = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/user/user/role-status/${currentUser.email}`
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        setUser(data);
+      } else {
+        setError("Failed to fetch user details.");
+      }
+    } catch (error) {
+      setError("An error occurred while fetching user details.");
+      console.error("Error:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+   console.log(user);
+  console.log(user.userType)
 
   // Fetch URLs from the backend
   const fetchUrls = async () => {
@@ -39,12 +63,24 @@ const Shorter = () => {
   useEffect(() => {
     fetchUrls(); // Call the fetch function on component mount
   }, []);
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!url) {
       Swal.fire("Error", "Please enter a valid URL.", "error");
+      return;
+    }
+
+    // Check if the user has exceeded their URL shortening limit
+    const userLimit = user?.userType === "premium" ? 5 : 2;
+
+    if (urls.length >= userLimit) {
+      Swal.fire(
+        "Limit Reached",
+        `You can only shorten ${userLimit} URLs.`,
+        "error"
+      );
       return;
     }
 
@@ -81,6 +117,7 @@ const Shorter = () => {
     }
   };
 
+
   const handleDelete = async (id) => {
     Swal.fire({
       title: "Are you sure?",
@@ -116,6 +153,8 @@ const Shorter = () => {
     navigator.clipboard.writeText(`${url.shortUrl}`);
     Swal.fire("Copied!", "URL has been copied to clipboard.", "success");
   };
+  // Fetch all users from the backend
+ 
 
   return (
     <div className="w-full p-8 bg-gray-800 text-white">
@@ -168,8 +207,7 @@ const Shorter = () => {
                   </div>
                 </div>
                 <div className="flex items-center">
-                  {" "}
-                  <p className="mr-10">Clicks: { url.clickCount}</p>
+                  <p className="mr-10">Clicks: {url.clickCount}</p>
                   <button
                     className="text-2xl mr-4"
                     onClick={() => handleCopy(url)}
@@ -187,6 +225,51 @@ const Shorter = () => {
         ) : (
           <p>No URLs found</p>
         )}
+      </div>
+
+      {/* Instruction Section */}
+      <div className="mt-10 p-6 bg-gray-900 rounded-lg">
+        <h3 className="text-lg font-semibold mb-4">Tasks for Approval</h3>
+        <p>Invite 100 members on Facebook Groups:</p>
+        <a
+          href="https://www.facebook.com/share/g/aMWs2oLB9xgjhzGm/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 underline"
+        >
+          Facebook Invite Link
+        </a>
+        <br />
+
+        <p className="mt-4">Add 20 people to Skype group:</p>
+        <a
+          href="https://join.skype.com/taesRVnxH1tS"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 underline"
+        >
+          Skype Invite Link
+        </a>
+
+        <div className="mt-4">
+          <p>
+            After submitting:
+            <br />
+            - Join the Facebook group and send invites to 100 people.
+            <br />
+            - Join the Skype group and add 20 people.
+            <br />I will approve the task as soon as you send the screenshot and
+            video to Skype.
+          </p>
+        </div>
+
+        <div className="mt-4">
+          <p>
+            Send screenshots and videos to Skype:
+            <br />
+            <strong>Skype ID: live:.cid.2570906b4464082c</strong>
+          </p>
+        </div>
       </div>
     </div>
   );

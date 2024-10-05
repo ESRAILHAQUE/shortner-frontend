@@ -11,7 +11,7 @@ const Signup = () => {
   const [error, setError] = useState(""); // To handle errors
   const [loading, setLoading] = useState(false); // To prevent multiple submissions
   const [message, setMessage] = useState(""); // To show success messages
-  const { signup } = useAuth(); // Get the signup function from AuthContext
+  const { signup, logout } = useAuth(); // Get the signup function from AuthContext
   const navigate = useNavigate(); // For redirecting after signup
 
   const handleSignup = async (e) => {
@@ -33,7 +33,7 @@ const Signup = () => {
       await sendEmailVerification(userCredential.user);
 
       // Send user info to the backend
-      await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user`, {
+      await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/user/user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -47,7 +47,8 @@ const Signup = () => {
       });
 
       setMessage("Verification email sent! Please check your inbox.");
-      setTimeout(() => navigate("/login"), 5000); // Redirect to login after a few seconds
+      setTimeout(() => navigate("/login"), 5000);
+      logout(); // Redirect to login after a few seconds
     } catch (error) {
       setError("Failed to create an account. Please try again.");
     } finally {
@@ -82,7 +83,7 @@ const Signup = () => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500"
+              className="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:border-green-500 text-black"
               placeholder="Enter your email"
               required
             />

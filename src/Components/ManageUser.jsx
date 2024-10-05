@@ -1,38 +1,39 @@
 import React, { useEffect, useState } from "react";
 
 const ManageUser = () => {
-  const [payments, setPayments] = useState([]);
+  const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
 
-  // Fetch all payment information from the backend
-   const fetchPayments = async () => {
-     try {
-       const response = await fetch(
-         `${import.meta.env.VITE_BACKEND_URL}/api/payment/payments`
-       );
-       const data = await response.json();
+  // Fetch all users from the backend
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/user/users`
+      );
+      const data = await response.json();
 
-       if (response.ok) {
-         setPayments(data);
-       } else {
-         setError("Failed to fetch payment details frontent");
-       }
-     } catch (error) {
-       setError("An error occurred while fetching payment details");
-       console.error("Error:", error);
-     }
-   };
+      if (response.ok) {
+        setUsers(data);
+      } else {
+        setError("Failed to fetch user details.");
+      }
+    } catch (error) {
+      setError("An error occurred while fetching user details.");
+      console.error("Error:", error);
+    }
+  };
+
   useEffect(() => {
-   
-
-    fetchPayments();
+    fetchUsers();
   }, []);
 
   const handleAccept = async (userEmail) => {
     try {
       // Update userType to 'premium' in the backend by email
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/users/${userEmail}/premium`,
+        `${
+          import.meta.env.VITE_BACKEND_URL
+        }/api/user/users/${userEmail}/premium`,
         {
           method: "PUT",
         }
@@ -40,9 +41,9 @@ const ManageUser = () => {
 
       if (response.ok) {
         // Update the local state to reflect the change
-        setPayments((prevPayments) =>
-          prevPayments.map((payment) =>
-            payment.email === userEmail ? { ...payment, userType: "premium" } : payment
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.email === userEmail ? { ...user, userType: "premium" } : user
           )
         );
       } else {
@@ -55,7 +56,7 @@ const ManageUser = () => {
 
   return (
     <div className="p-6 bg-gray-100 h-screen flex flex-col w-full">
-      <h1 className="text-2xl font-bold mb-4 text-black">Manage User Payments</h1>
+      <h1 className="text-2xl font-bold mb-4 text-black">Manage Users</h1>
 
       {error && (
         <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4">
@@ -63,35 +64,33 @@ const ManageUser = () => {
         </div>
       )}
 
-      {payments.length === 0 && !error ? (
-        <p className="text-black">No payment records available.</p>
+      {users.length === 0 && !error ? (
+        <p className="text-black">No users available.</p>
       ) : (
-        <table className="table-auto bg-white rounded-lg shadow-lg w-full ">
+        <table className="table-auto bg-white rounded-lg shadow-lg w-full">
           <thead>
             <tr className="bg-gray-200 text-gray-700">
               <th className="p-3">Email</th>
-              <th className="p-3">Mobile Number</th>
-              <th className="p-3">Transaction ID</th>
-              <th className="p-3">Date</th>
-              <th>Action</th>
+              <th className="p-3">Skype</th>
+              <th className="p-3">UserType</th>
+              <th className="p-3">Action</th>
             </tr>
           </thead>
           <tbody>
-            {payments.map((payment) => (
-              <tr key={payment._id} className="border-b">
-                <td className="p-3 text-center text-black">{payment.email}</td>
-                <td className="p-3 text-center text-black">{payment.mobileNumber}</td>
-                <td className="p-3 text-center text-black">{payment.trxnId}</td>
+            {users.map((user) => (
+              <tr key={user._id} className="border-b">
+                <td className="p-3 text-center text-black">{user.email}</td>
+                <td className="p-3 text-center text-black">{user.skype}</td>
+                <td className="p-3 text-center text-black">{user.userType}</td>
                 <td className="p-3 text-center text-black">
-                  {new Date(payment.createdAt).toLocaleDateString()}
-                </td>
-                <td>
                   <button
                     className="btn btn-secondary"
-                    onClick={() => handleAccept(payment.email)}
-                    disabled={payment.userType === "premium"} // Disable button if userType is already premium
+                    onClick={() => handleAccept(user.email)}
+                    disabled={
+                      user.userType === "premium" || user.role === "admin"
+                    } // Disable if already premium or admin
                   >
-                    {payment.userType === "premium" ? "Accepted" : "Accept"}
+                    {user.userType === "premium" ? "Premium" : "Make Premium"}
                   </button>
                 </td>
               </tr>

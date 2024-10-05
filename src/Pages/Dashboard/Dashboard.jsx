@@ -88,9 +88,9 @@ const Dashboard = () => {
               Log Out
             </button>
           ) : (
-            <Link to="/signup">
+            <Link to="/login">
               <button className="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 transition">
-                Register
+                Login
               </button>
             </Link>
           )}
